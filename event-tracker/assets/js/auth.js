@@ -136,7 +136,7 @@ if (authForm) {
     } else if (found.role === "staff") {
       window.location.href = "dashboard.html";
     } else if (found.role === "admin") {
-      window.location.href = "./admin/manage-users.html";
+      window.location.href = "https://kadunapolytechnic232.github.io/IVMS/event-tracker/admin/manage-users.html";
     }
   });
 }
