@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kaduna Polytechnic — Event Tracker</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="site-header">
+      <img src="assets/images/logo.png" alt="logo" class="logo">
+      <h1>Kaduna Polytechnic Event Tracker</h1>
+    </header>
+
+    <main class="center-card">
+      <div class="card card-auth" id="card-auth">
+        <h2>Welcome</h2>
+        <p>Login to access events and announcements.</p>
+
+        <form id="loginForm" class="form">
+          <input type="email" id="loginEmail" placeholder="Email" required>
+          <input type="password" id="loginPassword" placeholder="Password" required>
+          <button class="btn primary" type="submit">Login</button>
+        </form>
+
+        <div class="muted">Don't have an account? <a id="showRegister" href="#">Register</a></div>
+      </div>
+      
+
+
+<div class="card card-register hidden" id="registerCard">
+  <h2>Create account</h2>
+  <form id="registerForm" class="form">
+    <input type="text" id="regName" placeholder="Full name" required>
+
+    <select id="regRole" required>
+      <option value="student">Student</option>
+    </select>
+
+    <!-- 👇 Dynamic extra input -->
+    <input type="text" id="regSpecial" placeholder="Registration Number" required>
+
+
+
+
+     <select id="regFaculty" required>
+      <option value="">-- Select Faculty --</option>
+      <option value="science">Faculty of Science</option>
+      <option value="arts">Faculty of Arts</option>
+    </select>
+
+    <select id="regDepartment" required>
+      <option value="">-- Select Department --</option>
+    </select>
+    
+    
+
+    <input type="email" id="regEmail" placeholder="Email" required>
+    <input type="password" id="regPassword" placeholder="Password (6+ chars)" minlength="6" required>
+
+    <button class="btn primary" type="submit">Register</button>
+  </form>
+
+  <div class="muted">Already have an account? <a id="showLogin" href="#">Login</a></div>
+</div>
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+      <small>© 2025 Kaduna Polytechnic — Computer Science Dept.</small>
+    </footer>
+  </div>
+
+
+  <script type="module" src="assets/js/auth.js"></script>
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | Manage Users</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <header class="site-header">
+      <img src="../assets/images/logo.png" alt="logo" class="logo small">
+      <h1>Main Admin Panel</h1>
+      <div class="header-actions">
+        <button id="logoutBtn" class="btn danger small">Logout</button>
+      </div>
+    </header>
+
+    <div class="layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <ul>
+            <li><a href="./manage-users.html" class="active">Manage Users</a></li>
+            <li><a href="./main-admin.html">Post Announcement</a></li>
+            </ul>
+        </nav>
+        <div class="container">
+            
+            <h1>Manage Users</h1>
+
+            <form id="userForm">
+            <input type="text" id="regName" placeholder="Full name" required>
+
+            <select id="regRole" required>
+                <option value="">-- Select Role --</option>
+                <option value="student">Student</option>
+                <option value="staff">Staff</option>
+                <option value="admin">Admin</option>
+            </select>
+
+            <!-- 👇 Dynamic input -->
+            <input type="text" id="regSpecial" placeholder="Registration Number" required>
+
+            <select id="regFaculty" required>
+                <option value="">-- Select Faculty --</option>
+                <option value="science">Faculty of Science</option>
+                <option value="arts">Faculty of Arts</option>
+            </select>
+
+            <select id="regDepartment" required>
+                <option value="">-- Select Department --</option>
+            </select>
+
+            <input type="email" id="regEmail" placeholder="Email" required>
+            <input type="text" id="regPassword" placeholder="Password (6+ chars)" minlength="6" required>
+
+            <button type="submit" id="submitBtn">Add User</button>
+            </form>
+
+            <h2>All Users</h2>
+            <div class="userTable">
+                <table id="userTable">
+                <thead>
+                    <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Faculty</th>
+                    <th>Department</th>
+                    <th>Email</th>
+                    <th>Special ID</th>
+                    <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+  </div>
+  <script type="module" src="../assets/js/manage-users.js"></script>
+  <script >
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      // Clear session/local storage if needed
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // Redirect to login page
+      window.location.href = "../index.html"; // change this to your login page path
+    });
+  
+  </script>
+</body>
+</html>
+
