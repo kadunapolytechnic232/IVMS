@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Order</title>
+  <link rel="stylesheet" href="assets/css/orders.css" />
+  <link rel="icon" href="assets/img/favicon.ico" />
+</head>
+<body>
+  <div class="layout">
+    <div id="sidebar"></div>
+    <div class="main-content">
+      <div id="navbar"></div>
+
+      <section class="orders-section">
+        <h1>Create New Order</h1>
+
+        <form id="orderForm">
+          <div class="form-group">
+            <label for="customerSelect">Select Customer</label>
+            <select id="customerSelect" required>
+              <!-- Populated via JS -->
+            </select>
+          </div>
+
+          <div id="productList">
+            <!-- Product rows added here -->
+          </div>
+
+          <button type="button" class="add-product addProductRow";>+ Add Product</button>
+
+          <div class="total-container">
+            <strong>Total: </strong> ₦<span id="orderTotal">0.00</span>
+          </div>
+
+          <button type="submit" class="submit-btn">Submit Order</button>
+        </form>
+      </section>
+    </div>
+  </div>
+  <script type="module" src="assets/js/orders.js"></script>
+  <script>
+    fetch("components/sidebar.html").then(res => res.text()).then(data => {
+      document.getElementById("sidebar").innerHTML = data;
+    });
+    fetch("components/navbar.html").then(res => res.text()).then(data => {
+      document.getElementById("navbar").innerHTML = data;
+    });
+  </script>
+</body>
+</html>
