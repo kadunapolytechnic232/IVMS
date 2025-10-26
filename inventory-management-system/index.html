@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login</title>
+  <link rel="stylesheet" href="assets/css/login.css" />
+  <link rel="icon" href="assets/img/favicon.ico" />
+</head>
+<body>
+  <div class="login-container">
+    <form id="loginForm">
+      <img src="assets/img/logoI.png" alt="Logo" class="logo" />
+      <h2>Admin Login</h2>
+      <input type="email" id="email" placeholder="Email Address" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+      <p class="error-msg" id="errorMsg"></p>
+    </form>
+  </div>
+  <script type="module" src="assets/js/validation.js"></script>
+</body>
+</html>
