@@ -87,7 +87,7 @@ function addProductRow() {
 }
 
 // ===============================
-// Refresh all product dropdowns when data changes (with stock shown)
+// Refresh all product dropdowns when data changes (safe version)
 // ===============================
 function refreshProductRows() {
   document.querySelectorAll(".product-row select").forEach(select => {
@@ -95,8 +95,10 @@ function refreshProductRows() {
     select.innerHTML = `<option value="">Select Product</option>`;
 
     products.forEach(p => {
-      const stockText = p.quantity > 0 ? `${p.quantity} in stock` : "Out of stock";
-      const disabledAttr = p.quantity > 0 ? "" : "disabled";
+      // Make sure quantity is a valid number
+      const quantity = parseInt(p.quantity) || 0;
+      const stockText = quantity > 0 ? `${quantity} in stock` : "Out of stock";
+      const disabledAttr = quantity > 0 ? "" : "disabled";
       select.innerHTML += `<option value="${p.id}" data-price="${p.price}" ${disabledAttr}>${p.name} (₦${p.price}) — ${stockText}</option>`;
     });
 
@@ -215,6 +217,7 @@ document.querySelector(".addProductRow").addEventListener("click", addProductRow
 document.addEventListener("DOMContentLoaded", () => {
   addProductRow();
 });
+
 
 
 
