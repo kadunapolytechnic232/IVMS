@@ -114,15 +114,17 @@ function calculateTotal() {
   document.getElementById("orderTotal").textContent = total.toLocaleString("en-NG", { minimumFractionDigits: 2 });
 }
 
+
 // ===============================
-// Handle order form submission
+// Handle order form submission with stock check + live update
 // ===============================
-document.getElementById("orderForm").addEventListener("submit", function (e) {
+document.getElementById("orderForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
   const customerId = document.getElementById("customerSelect").value;
   if (!customerId) return alert("Please select a customer.");
 
+  // Collect all selected products and quantities
   const orderItems = [];
   document.querySelectorAll(".product-row").forEach(row => {
     const productId = row.querySelector("select").value;
@@ -134,6 +136,42 @@ document.getElementById("orderForm").addEventListener("submit", function (e) {
 
   if (orderItems.length === 0) return alert("Please add at least one product.");
 
+  // Step 1: Check product availability in Firebase
+  let insufficient = [];
+  for (let item of orderItems) {
+    const productRef = ref(db, `IVMS/products/${item.productId}`);
+    const snap = await get(productRef);
+
+    if (!snap.exists()) {
+      insufficient.push(`Product not found (ID: ${item.productId})`);
+      continue;
+    }
+
+    const product = snap.val();
+    const available = parseInt(product.quantity || 0);
+
+    if (available < item.qty) {
+      insufficient.push(`${product.name} — Available: ${available}, Ordered: ${item.qty}`);
+    }
+  }
+
+  // Step 2: Stop if any product has insufficient quantity
+  if (insufficient.length > 0) {
+    alert("❌ Cannot process order.\nThe following products have insufficient stock:\n\n" + insufficient.join("\n"));
+    return;
+  }
+
+  // Step 3: Deduct product quantities and prepare Firebase updates
+  const updates = {};
+  for (let item of orderItems) {
+    const productRef = ref(db, `IVMS/products/${item.productId}`);
+    const snap = await get(productRef);
+    const product = snap.val();
+    const newQty = product.quantity - item.qty;
+    updates[`IVMS/products/${item.productId}/quantity`] = newQty;
+  }
+
+  // Step 4: Save the order
   const orderId = Date.now().toString();
   const order = {
     id: orderId,
@@ -143,12 +181,26 @@ document.getElementById("orderForm").addEventListener("submit", function (e) {
     createdAt: new Date().toISOString()
   };
 
-  set(ref(db, `IVMS/orders/${orderId}`), order).then(() => {
-    alert("Order submitted successfully!");
+  updates[`IVMS/orders/${orderId}`] = order;
+
+  // Step 5: Commit all updates atomically
+  try {
+    await update(ref(db), updates);
+    alert("✅ Order submitted successfully! Stock has been updated.");
+
+    // Reset form
     document.getElementById("orderForm").reset();
     document.getElementById("productList").innerHTML = "";
     document.getElementById("orderTotal").textContent = "0.00";
-  });
+    addProductRow();
+
+    // Step 6: Refresh displayed product quantities live
+    refreshProductRows();  // Rebuild dropdowns with updated stock data
+
+  } catch (error) {
+    console.error(error);
+    alert("⚠️ Error while submitting order. Please try again.");
+  }
 });
 
 // ===============================
@@ -159,6 +211,7 @@ document.querySelector(".addProductRow").addEventListener("click", addProductRow
 document.addEventListener("DOMContentLoaded", () => {
   addProductRow();
 });
+
 
 
 
