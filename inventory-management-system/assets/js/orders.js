@@ -87,15 +87,19 @@ function addProductRow() {
 }
 
 // ===============================
-// Refresh all product dropdowns when data changes
+// Refresh all product dropdowns when data changes (with stock shown)
 // ===============================
 function refreshProductRows() {
   document.querySelectorAll(".product-row select").forEach(select => {
     const selectedValue = select.value; // Keep previous selection
     select.innerHTML = `<option value="">Select Product</option>`;
+
     products.forEach(p => {
-      select.innerHTML += `<option value="${p.id}" data-price="${p.price}">${p.name} (₦${p.price})</option>`;
+      const stockText = p.quantity > 0 ? `${p.quantity} in stock` : "Out of stock";
+      const disabledAttr = p.quantity > 0 ? "" : "disabled";
+      select.innerHTML += `<option value="${p.id}" data-price="${p.price}" ${disabledAttr}>${p.name} (₦${p.price}) — ${stockText}</option>`;
     });
+
     select.value = selectedValue;
   });
 }
@@ -116,7 +120,7 @@ function calculateTotal() {
 
 
 // ===============================
-// Handle order form submission with stock check + live update
+// Handle order form submission with stock check + live update + visible quantities
 // ===============================
 document.getElementById("orderForm").addEventListener("submit", async function (e) {
   e.preventDefault();
@@ -124,7 +128,7 @@ document.getElementById("orderForm").addEventListener("submit", async function (
   const customerId = document.getElementById("customerSelect").value;
   if (!customerId) return alert("Please select a customer.");
 
-  // Collect all selected products and quantities
+  // Collect selected products and quantities
   const orderItems = [];
   document.querySelectorAll(".product-row").forEach(row => {
     const productId = row.querySelector("select").value;
@@ -136,7 +140,7 @@ document.getElementById("orderForm").addEventListener("submit", async function (
 
   if (orderItems.length === 0) return alert("Please add at least one product.");
 
-  // Step 1: Check product availability in Firebase
+  // Step 1: Check product availability
   let insufficient = [];
   for (let item of orderItems) {
     const productRef = ref(db, `IVMS/products/${item.productId}`);
@@ -155,7 +159,7 @@ document.getElementById("orderForm").addEventListener("submit", async function (
     }
   }
 
-  // Step 2: Stop if any product has insufficient quantity
+  // Step 2: Stop if insufficient stock
   if (insufficient.length > 0) {
     alert("❌ Cannot process order.\nThe following products have insufficient stock:\n\n" + insufficient.join("\n"));
     return;
@@ -171,7 +175,7 @@ document.getElementById("orderForm").addEventListener("submit", async function (
     updates[`IVMS/products/${item.productId}/quantity`] = newQty;
   }
 
-  // Step 4: Save the order
+  // Step 4: Create order record
   const orderId = Date.now().toString();
   const order = {
     id: orderId,
@@ -183,10 +187,10 @@ document.getElementById("orderForm").addEventListener("submit", async function (
 
   updates[`IVMS/orders/${orderId}`] = order;
 
-  // Step 5: Commit all updates atomically
+  // Step 5: Commit updates to Firebase
   try {
     await update(ref(db), updates);
-    alert("✅ Order submitted successfully! Stock has been updated.");
+    alert("✅ Order submitted successfully! Stock updated.");
 
     // Reset form
     document.getElementById("orderForm").reset();
@@ -194,8 +198,8 @@ document.getElementById("orderForm").addEventListener("submit", async function (
     document.getElementById("orderTotal").textContent = "0.00";
     addProductRow();
 
-    // Step 6: Refresh displayed product quantities live
-    refreshProductRows();  // Rebuild dropdowns with updated stock data
+    // Step 6: Refresh dropdowns to show updated stock
+    refreshProductRows();
 
   } catch (error) {
     console.error(error);
@@ -211,6 +215,7 @@ document.querySelector(".addProductRow").addEventListener("click", addProductRow
 document.addEventListener("DOMContentLoaded", () => {
   addProductRow();
 });
+
 
 
 
