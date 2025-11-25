@@ -98,7 +98,7 @@ function refreshProductRows() {
       const stock = parseInt(p.stock) || 0; // Use 'stock' from Firebase
       const stockText = stock > 0 ? `${stock} in stock` : "Out of stock";
       const disabledAttr = stock > 0 ? "" : "disabled";
-      select.innerHTML += `<option value="${parseInt(p.id)+1}" data-price="${p.price}" ${disabledAttr}>${p.name} (₦${p.price}) — ${stockText}</option>`;
+      select.innerHTML += `<option value="${parseInt(p.id)-1}" data-price="${p.price}" ${disabledAttr}>${p.name} (₦${p.price}) — ${stockText}</option>`;
     });
 
     select.value = selectedValue;
@@ -217,6 +217,7 @@ document.querySelector(".addProductRow").addEventListener("click", addProductRow
 document.addEventListener("DOMContentLoaded", () => {
   addProductRow();
 });
+
 
 
 
