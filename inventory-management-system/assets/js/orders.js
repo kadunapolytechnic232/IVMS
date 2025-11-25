@@ -95,7 +95,7 @@ function refreshProductRows() {
     select.innerHTML = "";
 
     // Add default option
-    select.appendChild(new Option("Select Product", ""));
+   // select.appendChild(new Option("Select Product", ""));
 
     // Add real product options safely
     products.forEach(p => {
@@ -233,6 +233,7 @@ document.querySelector(".addProductRow").addEventListener("click", addProductRow
 document.addEventListener("DOMContentLoaded", () => {
   addProductRow();
 });
+
 
 
 
