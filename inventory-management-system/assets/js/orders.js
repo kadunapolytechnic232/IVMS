@@ -86,22 +86,34 @@ function addProductRow() {
   qtyInput.addEventListener("input", calculateTotal);
 }
 
-// ===============================
-// Refresh all product dropdowns when data changes (uses 'stock' field)
-// ===============================
 function refreshProductRows() {
   document.querySelectorAll(".product-row select").forEach(select => {
-    const selectedValue = select.value; // Keep previous selection
-    select.innerHTML = `<option value="">Select Product</option>`;
+    const prevValue = select.value; // save previous selection
+    const qtyInput = select.parentElement.querySelector("input");
 
+    // Remove all options
+    select.innerHTML = "";
+
+    // Add default option
+    select.appendChild(new Option("Select Product", ""));
+
+    // Add real product options safely
     products.forEach(p => {
-      const stock = parseInt(p.stock) || 0; // Use 'stock' from Firebase
-      const stockText = stock > 0 ? `${stock} in stock` : "Out of stock";
-      const disabledAttr = stock > 0 ? "" : "disabled";
-      select.innerHTML += `<option value="${parseInt(p.id)+1}" data-price="${p.price}" ${disabledAttr}>${p.name} (₦${p.price}) — ${stockText}</option>`;
+      const stock = parseInt(p.stock) || 0;
+      const text = `${p.name} (₦${p.price}) — ${stock > 0 ? stock + " in stock" : "Out of stock"}`;
+      const option = new Option(text, p.id);
+      option.disabled = stock <= 0;
+      option.dataset.price = p.price;
+      select.appendChild(option);
     });
 
-    select.value = selectedValue;
+    // Restore previous selection if still valid
+    if (prevValue && products.find(p => p.id === prevValue && (parseInt(p.stock) || 0) > 0)) {
+      select.value = prevValue;
+    } else {
+      select.value = "";
+      if (qtyInput) qtyInput.value = 1;
+    }
   });
 }
 
@@ -132,13 +144,22 @@ document.getElementById("orderForm").addEventListener("submit", async function (
 
   // Collect selected products and quantities
   const orderItems = [];
-  document.querySelectorAll(".product-row").forEach(row => {
-    const productId = row.querySelector("select").value;
-    const qty = parseInt(row.querySelector("input").value);
-    if (productId && qty > 0) {
-      orderItems.push({ productId, qty });
-    }
-  });
+document.querySelectorAll(".product-row").forEach(row => {
+  const select = row.querySelector("select");
+  const qty = parseInt(row.querySelector("input").value) || 0;
+
+  // Use the real product from the products array
+  const product = products.find(p => p.id === select.value);
+
+  if (product && qty > 0) {
+    orderItems.push({
+      productId: product.id,
+      name: product.name,
+      price: parseFloat(product.price),
+      qty: qty
+    });
+  }
+});
 
   if (orderItems.length === 0) return alert("Please add at least one product.");
 
@@ -217,6 +238,7 @@ document.querySelector(".addProductRow").addEventListener("click", addProductRow
 document.addEventListener("DOMContentLoaded", () => {
   addProductRow();
 });
+
 
 
 
