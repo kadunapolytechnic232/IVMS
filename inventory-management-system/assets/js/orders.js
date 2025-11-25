@@ -133,8 +133,8 @@ function calculateTotal() {
 
 
 
-  // ===============================
-// Handle order form submission (uses 'stock' field)
+// ===============================
+// Handle order form submission (optimized)
 // ===============================
 document.getElementById("orderForm").addEventListener("submit", async function (e) {
   e.preventDefault();
@@ -142,76 +142,72 @@ document.getElementById("orderForm").addEventListener("submit", async function (
   const customerId = document.getElementById("customerSelect").value;
   if (!customerId) return alert("Please select a customer.");
 
-  // Collect selected products and quantities
+  // 1️⃣ Collect selected products and quantities
   const orderItems = [];
-document.querySelectorAll(".product-row").forEach(row => {
-  const select = row.querySelector("select");
-  const qty = parseInt(row.querySelector("input").value) || 0;
+  document.querySelectorAll(".product-row").forEach(row => {
+    const select = row.querySelector("select");
+    const qtyInput = row.querySelector("input");
+    const qty = parseInt(qtyInput.value) || 0;
 
-  // Use the real product from the products array
-  const product = products.find(p => p.id === select.value);
-
-  if (product && qty > 0) {
-    orderItems.push({
-      productId: product.id,
-      name: product.name,
-      price: parseFloat(product.price),
-      qty: qty
-    });
-  }
-});
+    // Get the real product object from products array
+    const product = products.find(p => p.id === select.value);
+    if (product && qty > 0) {
+      orderItems.push({
+        productId: product.id,
+        name: product.name,
+        price: parseFloat(product.price),
+        qty: qty
+      });
+    }
+  });
 
   if (orderItems.length === 0) return alert("Please add at least one product.");
 
-  // Step 1: Check availability
-  let insufficient = [];
-  for (let item of orderItems) {
-    const productRef = ref(db, `IVMS/products/${item.productId}`);
-    const snap = await get(productRef);
+  // 2️⃣ Check stock availability and prepare updates
+  const insufficient = [];
+  const updates = {};
+  const productDataMap = {}; // store product info to avoid double reads
 
+  for (let item of orderItems) {
+    const snap = await get(ref(db, `IVMS/products/${item.productId}`));
     if (!snap.exists()) {
       insufficient.push(`Product not found (ID: ${item.productId})`);
       continue;
     }
 
     const product = snap.val();
-    const available = parseInt(product.stock || 0);
+    productDataMap[item.productId] = product;
+    const available = Number(product.stock || 0);
 
     if (available < item.qty) {
       insufficient.push(`${product.name} — Available: ${available}, Ordered: ${item.qty}`);
+    } else {
+      updates[`IVMS/products/${item.productId}/stock`] = available - item.qty;
     }
   }
 
-  // Step 2: Stop if any product is insufficient
   if (insufficient.length > 0) {
-    alert("❌ Cannot process order.\nThe following products have insufficient stock:\n\n" + insufficient.join("\n"));
-    return;
+    return alert(
+      "❌ Cannot process order.\nThe following products have insufficient stock:\n\n" +
+      insufficient.join("\n")
+    );
   }
 
-  // Step 3: Deduct stocks and prepare updates
-  const updates = {};
-  for (let item of orderItems) {
-    const productRef = ref(db, `IVMS/products/${item.productId}`);
-    const snap = await get(productRef);
-    const product = snap.val();
-    const newStock = product.stock - item.qty;
-    updates[`IVMS/products/${item.productId}/stock`] = newStock;
-  }
-
-  // Step 4: Create order
+  // 3️⃣ Create order object
   const orderId = Date.now().toString();
-  const order = {
+  const totalPrice = parseFloat(document.getElementById("orderTotal").textContent.replace(/,/g, "")) || 0;
+
+  updates[`IVMS/orders/${orderId}`] = {
     id: orderId,
     customerId,
     items: orderItems,
-    total: parseFloat(document.getElementById("orderTotal").textContent.replace(/,/g, "")),
+    total: totalPrice,
     createdAt: new Date().toISOString()
   };
 
-  updates[`IVMS/orders/${orderId}`] = order;
-
-  // Step 5: Update Firebase
+  // 4️⃣ Submit updates to Firebase
   try {
+    // Optional: disable submit button here to prevent double clicks
     await update(ref(db), updates);
     alert("✅ Order submitted successfully! Stock updated.");
 
@@ -221,9 +217,8 @@ document.querySelectorAll(".product-row").forEach(row => {
     document.getElementById("orderTotal").textContent = "0.00";
     addProductRow();
 
-    // Step 6: Refresh product dropdowns live
+    // Refresh product dropdowns to reflect new stock
     refreshProductRows();
-
   } catch (error) {
     console.error(error);
     alert("⚠️ Error while submitting order. Please try again.");
@@ -238,6 +233,7 @@ document.querySelector(".addProductRow").addEventListener("click", addProductRow
 document.addEventListener("DOMContentLoaded", () => {
   addProductRow();
 });
+
 
 
 
